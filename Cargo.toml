@@ -10,3 +10,4 @@ bytes = { version = "1.4.0", features = ["serde"] }
 lunatic = "0.13.1"
 pretty_assertions = "1.3.0"
 serde = "1.0.163"
+thiserror = "1.0.40"

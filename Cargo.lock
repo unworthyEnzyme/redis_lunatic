@@ -190,6 +190,7 @@ dependencies = [
  "lunatic",
  "pretty_assertions",
  "serde",
+ "thiserror",
 ]
 
 [[package]]

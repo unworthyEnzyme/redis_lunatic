@@ -1,8 +1,10 @@
 use bytes::{BufMut, Bytes, BytesMut};
 use std::{
+    error,
     io::{self, BufRead, BufReader},
     vec,
 };
+use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Frame {
@@ -103,25 +105,12 @@ impl Frame {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Error)]
 pub enum DecodingError {
-    Incomplete,
+    #[error("IO error")]
+    IO(#[from] io::Error),
+    #[error("Invalid format")]
     InvalidFormat,
-    EOF,
-    Other,
-}
-
-impl From<io::Error> for DecodingError {
-    fn from(value: io::Error) -> Self {
-        match value.kind() {
-            io::ErrorKind::InvalidData | io::ErrorKind::InvalidInput => Self::InvalidFormat,
-            io::ErrorKind::UnexpectedEof
-            | io::ErrorKind::Interrupted
-            | io::ErrorKind::TimedOut
-            | io::ErrorKind::BrokenPipe => Self::Incomplete,
-            _ => Self::Other,
-        }
-    }
 }
 
 #[cfg(test)]
@@ -170,47 +159,47 @@ mod test {
     fn decodes_simple_string() {
         let frame = Frame::Simple("hello".to_string());
         let mut reader = Cursor::new(frame.encode());
-        let decoded = Frame::decode(&mut reader);
-        assert_eq!(decoded, Ok(frame))
+        let decoded = Frame::decode(&mut reader).unwrap();
+        assert_eq!(decoded, frame)
     }
 
     #[lunatic::test]
     fn decodes_error() {
         let frame = Frame::Error("error".to_string());
         let mut reader = Cursor::new(frame.encode());
-        let decoded = Frame::decode(&mut reader);
-        assert_eq!(decoded, Ok(frame))
+        let decoded = Frame::decode(&mut reader).unwrap();
+        assert_eq!(decoded, frame);
     }
 
     #[lunatic::test]
     fn decodes_integer() {
         let frame = Frame::Integer(42);
         let mut reader = Cursor::new(frame.encode());
-        let decoded = Frame::decode(&mut reader);
-        assert_eq!(decoded, Ok(frame));
+        let decoded = Frame::decode(&mut reader).unwrap();
+        assert_eq!(decoded, frame);
     }
 
     #[lunatic::test]
     fn decodes_bulk() {
         let frame = Frame::Bulk("hello".into());
         let mut reader = Cursor::new(frame.encode());
-        let decoded = Frame::decode(&mut reader);
-        assert_eq!(decoded, Ok(frame))
+        let decoded = Frame::decode(&mut reader).unwrap();
+        assert_eq!(decoded, frame);
     }
 
     #[lunatic::test]
     fn decode_null() {
         let frame = Frame::Null;
         let mut reader = Cursor::new(frame.encode());
-        let decoded = Frame::decode(&mut reader);
-        assert_eq!(decoded, Ok(frame));
+        let decoded = Frame::decode(&mut reader).unwrap();
+        assert_eq!(decoded, frame);
     }
 
     #[lunatic::test]
     fn decodes_array() {
         let frame = Frame::Array(vec![Frame::Bulk("GET".into()), Frame::Bulk("key".into())]);
         let mut reader = Cursor::new(frame.encode());
-        let decoded = Frame::decode(&mut reader);
-        assert_eq!(decoded, Ok(frame))
+        let decoded = Frame::decode(&mut reader).unwrap();
+        assert_eq!(decoded, frame);
     }
 }
