@@ -1,6 +1,6 @@
 use crate::{connection::Connection, frame::Frame};
 use bytes::Bytes;
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufRead, Write};
 
 #[derive(Debug)]
 pub struct Client<R: BufRead, W: Write> {
@@ -71,7 +71,7 @@ mod tests {
     use crate::{connection::Connection, frame::Frame};
     use lunatic::net::TcpStream;
     use pretty_assertions::assert_eq;
-    use std::io::{BufRead, BufReader, BufWriter};
+    use std::io::{BufReader, BufWriter};
 
     #[lunatic::test]
     fn ping() {
@@ -102,7 +102,7 @@ mod tests {
         let writer = BufWriter::new(stream);
         let connection = Connection::new(reader, writer);
         let mut client = Client::new(connection);
-        let _ = client.set("name", "unworthyEnzyme".into()).unwrap();
+        client.set("name", "unworthyEnzyme".into()).unwrap();
         let response = client.get("name").unwrap();
         assert_eq!(response, Frame::Bulk("unworthyEnzyme".into()));
     }
