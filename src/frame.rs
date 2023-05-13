@@ -1,6 +1,6 @@
 use bytes::{BufMut, Bytes, BytesMut};
 use std::{
-    io::{self, BufRead},
+    io::{self, BufRead, BufReader},
     vec,
 };
 
@@ -71,7 +71,6 @@ impl Frame {
                 }
                 let mut buffer = vec![0; length as usize + 2];
                 reader.read_exact(&mut buffer)?;
-                println!("{}", buffer.capacity());
                 Ok(Frame::Bulk(Bytes::copy_from_slice(
                     &buffer[..buffer.len() - 2],
                 )))
