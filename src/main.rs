@@ -1,5 +1,5 @@
 use std::{
-    io::{BufRead, BufReader, BufWriter},
+    io::{BufReader, BufWriter},
     time::Duration,
 };
 
@@ -23,9 +23,9 @@ fn main(_: Mailbox<()>) {
         let reader = BufReader::new(stream);
         let conn = Connection::new(reader, writer);
         let mut client = Client::new(conn);
-        let _ = client.set("name".into(), "unworthyEnyzme".into()).unwrap();
-        let name = client.get("name".into()).unwrap();
+        client.set("name", "unworthyEnyzme".into()).unwrap();
+        let name = client.get("name").unwrap();
         println!("[client]: {:?}", name);
     });
-    let _ = server.result();
+    server.result();
 }

@@ -38,7 +38,7 @@ impl TryFrom<Frame> for Command {
             return  Err(());
         };
         if name == &Bytes::from("PING") {
-            return Ok(Command::Ping);
+            Ok(Command::Ping)
         } else if name == &Bytes::from("GET") {
             let Some(Frame::Bulk(key)) = frames.get(1) else {
                 return Err(());

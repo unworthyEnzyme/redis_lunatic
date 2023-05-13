@@ -1,7 +1,6 @@
 use bytes::{BufMut, Bytes, BytesMut};
 use std::{
-    error,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead},
     vec,
 };
 use thiserror::Error;
