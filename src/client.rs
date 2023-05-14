@@ -1,10 +1,7 @@
 use crate::{connection::Connection, frame::Frame};
 use bytes::Bytes;
 use lunatic::net::TcpStream;
-use std::{
-    io::{self, BufRead, BufReader, BufWriter, Write},
-    net::IpAddr,
-};
+use std::io::{self, BufReader, BufWriter};
 
 #[derive(Debug)]
 pub struct Client {
@@ -76,10 +73,8 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::Client;
-    use crate::{connection::Connection, frame::Frame};
-    use lunatic::net::TcpStream;
+    use crate::frame::Frame;
     use pretty_assertions::assert_eq;
-    use std::io::{BufReader, BufWriter};
 
     #[lunatic::test]
     fn ping() {

@@ -1,6 +1,5 @@
-use std::io::{BufRead, BufWriter, Write};
-
 use crate::frame::Frame;
+use std::io::{BufRead, BufWriter, Write};
 
 #[derive(Debug)]
 pub struct Connection<R, W> {

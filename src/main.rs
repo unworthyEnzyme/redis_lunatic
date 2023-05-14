@@ -1,13 +1,6 @@
-use std::{
-    io::{BufReader, BufWriter},
-    time::Duration,
-};
-
-use lunatic::{
-    net::{TcpListener, TcpStream},
-    sleep, spawn_link, Mailbox,
-};
-use redis_lunatic::{client::Client, connection::Connection, server::Server};
+use lunatic::{net::TcpListener, sleep, spawn_link, Mailbox};
+use redis_lunatic::{client::Client, server::Server};
+use std::time::Duration;
 
 #[lunatic::main]
 fn main(_: Mailbox<()>) {
