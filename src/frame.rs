@@ -46,7 +46,7 @@ impl Frame {
 
     pub fn decode<T: BufRead>(reader: &mut T) -> Result<Frame, DecodingError> {
         let mut buffer = vec![0; 1];
-        reader.read_exact(&mut buffer)?;
+        read_all(reader, &mut buffer)?;
         match buffer[0] {
             b'+' => {
                 let mut buffer = String::with_capacity(1024);
@@ -71,7 +71,7 @@ impl Frame {
                     return Ok(Frame::Null);
                 }
                 let mut buffer = vec![0; length as usize + 2];
-                reader.read_exact(&mut buffer)?;
+                read_all(reader, &mut buffer)?;
                 Ok(Frame::Bulk(Bytes::copy_from_slice(
                     &buffer[..buffer.len() - 2],
                 )))
@@ -102,6 +102,14 @@ impl Frame {
             Err(_) => Err(DecodingError::InvalidFormat),
         }
     }
+}
+
+fn read_all(reader: &mut impl BufRead, buf: &mut [u8]) -> io::Result<()> {
+    let mut read = reader.read(buf)?;
+    while read != buf.len() {
+        read = reader.read(buf)?;
+    }
+    Ok(())
 }
 
 #[derive(Debug, Error)]
