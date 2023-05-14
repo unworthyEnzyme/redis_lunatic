@@ -1,10 +1,14 @@
 use crate::{connection::Connection, frame::Frame};
 use bytes::Bytes;
-use std::io::{BufRead, Write};
+use lunatic::net::TcpStream;
+use std::{
+    io::{self, BufRead, BufReader, BufWriter, Write},
+    net::IpAddr,
+};
 
 #[derive(Debug)]
-pub struct Client<R: BufRead, W: Write> {
-    connection: Connection<R, W>,
+pub struct Client {
+    connection: Connection<BufReader<TcpStream>, BufWriter<TcpStream>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -30,9 +34,13 @@ impl From<Command> for Frame {
     }
 }
 
-impl<R: BufRead, W: Write> Client<R, W> {
-    pub fn new(stream: Connection<R, W>) -> Self {
-        Self { connection: stream }
+impl Client {
+    pub fn connect(addr: &str) -> io::Result<Self> {
+        let stream = TcpStream::connect(addr)?;
+        let writer = BufWriter::new(stream.clone());
+        let reader = BufReader::new(stream);
+        let connection = Connection::new(reader, writer);
+        Ok(Self { connection })
     }
 
     pub fn ping(&mut self) -> Result<Frame, ()> {
@@ -75,33 +83,21 @@ mod tests {
 
     #[lunatic::test]
     fn ping() {
-        let stream = TcpStream::connect("[::1]:6379").expect("Cannot connect to the server");
-        let reader = BufReader::new(stream.clone());
-        let writer = BufWriter::new(stream);
-        let connection = Connection::new(reader, writer);
-        let mut client = Client::new(connection);
+        let mut client = Client::connect("[::1]:6379").unwrap();
         let pong = client.ping().unwrap();
         assert_eq!(pong, Frame::Simple("PONG".to_string()))
     }
 
     #[lunatic::test]
     fn set() {
-        let stream = TcpStream::connect("[::1]:6379").expect("Cannot connect to the server");
-        let reader = BufReader::new(stream.clone());
-        let writer = BufWriter::new(stream);
-        let connection = Connection::new(reader, writer);
-        let mut client = Client::new(connection);
+        let mut client = Client::connect("[::1]:6379").unwrap();
         let response = client.set("name", "unworthyEnzyme".into());
         assert!(response.is_ok());
     }
 
     #[lunatic::test]
     fn get() {
-        let stream = TcpStream::connect("[::1]:6379").expect("Cannot connect to the server");
-        let reader = BufReader::new(stream.clone());
-        let writer = BufWriter::new(stream);
-        let connection = Connection::new(reader, writer);
-        let mut client = Client::new(connection);
+        let mut client = Client::connect("[::1]:6379").unwrap();
         client.set("name", "unworthyEnzyme".into()).unwrap();
         let response = client.get("name").unwrap();
         assert_eq!(response, Frame::Bulk("unworthyEnzyme".into()));
