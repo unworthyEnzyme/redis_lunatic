@@ -1,10 +1,6 @@
-use thiserror::Error;
-
 use crate::frame::{self, Frame};
-use std::{
-    error,
-    io::{self, BufRead, BufWriter, Write},
-};
+use std::io::{self, BufRead, BufWriter, Write};
+use thiserror::Error;
 
 #[derive(Debug)]
 pub struct Connection<R, W> {

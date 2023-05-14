@@ -1,5 +1,5 @@
 use crate::{
-    connection::{self, Connection, ConnectionError},
+    connection::{self, Connection},
     frame::Frame,
 };
 use bytes::Bytes;
@@ -45,7 +45,7 @@ impl Client {
     }
 
     pub fn ping(&mut self) -> Result<Frame, ClientError> {
-        Ok(self.send_command(Command::Ping)?)
+        self.send_command(Command::Ping)
     }
 
     pub fn get(&mut self, key: &str) -> Result<Frame, ClientError> {
@@ -53,7 +53,7 @@ impl Client {
     }
 
     pub fn set(&mut self, key: &str, value: Bytes) -> Result<Frame, ClientError> {
-        Ok(self.send_command(Command::Set(key.into(), value))?)
+        self.send_command(Command::Set(key.into(), value))
     }
 
     fn send_command(&mut self, command: Command) -> Result<Frame, ClientError> {
