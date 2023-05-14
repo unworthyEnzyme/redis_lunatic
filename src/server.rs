@@ -35,7 +35,6 @@ mod db {
 
         #[handle_request]
         fn get(&self, key: String) -> Option<Bytes> {
-            dbg!(&key);
             self.entries.get(&key).cloned()
         }
 
