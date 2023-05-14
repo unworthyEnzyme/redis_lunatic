@@ -1,5 +1,10 @@
-use crate::frame::Frame;
-use std::io::{BufRead, BufWriter, Write};
+use thiserror::Error;
+
+use crate::frame::{self, Frame};
+use std::{
+    error,
+    io::{self, BufRead, BufWriter, Write},
+};
 
 #[derive(Debug)]
 pub struct Connection<R, W> {
@@ -7,27 +12,27 @@ pub struct Connection<R, W> {
     writer: W,
 }
 
+#[derive(Debug, Error)]
+pub enum ConnectionError {
+    #[error("IO error")]
+    IO(#[from] io::Error),
+    #[error("Decoding error")]
+    DecodingError(#[from] frame::DecodingError),
+}
+
 impl<R: BufRead, W: Write> Connection<R, W> {
     pub fn new(reader: R, writer: W) -> Self {
         Self { reader, writer }
     }
 
-    pub fn send_frame(&mut self, frame: Frame) -> Result<(), ()> {
+    pub fn send_frame(&mut self, frame: Frame) -> Result<(), ConnectionError> {
         let mut writer = BufWriter::new(&mut self.writer);
-        if writer.write_all(&frame.encode()[..]).is_err() {
-            return Err(());
-        };
-        if writer.flush().is_err() {
-            return Err(());
-        };
+        writer.write_all(&frame.encode()[..])?;
+        writer.flush()?;
         Ok(())
     }
 
-    pub fn receive_frame(&mut self) -> Result<Frame, ()> {
-        let response = Frame::decode(&mut self.reader);
-        let Ok(response) = response else {
-            return Err(())
-        };
-        Ok(response)
+    pub fn receive_frame(&mut self) -> Result<Frame, ConnectionError> {
+        Ok(Frame::decode(&mut self.reader)?)
     }
 }

@@ -1,7 +1,11 @@
-use crate::{connection::Connection, frame::Frame};
+use crate::{
+    connection::{self, Connection, ConnectionError},
+    frame::Frame,
+};
 use bytes::Bytes;
 use lunatic::net::TcpStream;
 use std::io::{self, BufReader, BufWriter};
+use thiserror::Error;
 
 #[derive(Debug)]
 pub struct Client {
@@ -40,34 +44,28 @@ impl Client {
         Ok(Self { connection })
     }
 
-    pub fn ping(&mut self) -> Result<Frame, ()> {
-        match self.send_command(Command::Ping) {
-            Ok(Frame::Error(_)) => Err(()),
-            Ok(frame) => Ok(frame),
-            Err(_) => Err(()),
-        }
+    pub fn ping(&mut self) -> Result<Frame, ClientError> {
+        Ok(self.send_command(Command::Ping)?)
     }
 
-    pub fn get(&mut self, key: &str) -> Result<Frame, ()> {
-        match self.send_command(Command::Get(key.into())) {
-            Ok(Frame::Error(_)) => Err(()),
-            Ok(frame) => Ok(frame),
-            Err(_) => Err(()),
-        }
+    pub fn get(&mut self, key: &str) -> Result<Frame, ClientError> {
+        self.send_command(Command::Get(key.into()))
     }
 
-    pub fn set(&mut self, key: &str, value: Bytes) -> Result<(), ()> {
-        match self.send_command(Command::Set(key.into(), value)) {
-            Ok(Frame::Error(_)) => Err(()),
-            Ok(_) => Ok(()),
-            Err(_) => Err(()),
-        }
+    pub fn set(&mut self, key: &str, value: Bytes) -> Result<Frame, ClientError> {
+        Ok(self.send_command(Command::Set(key.into(), value))?)
     }
 
-    fn send_command(&mut self, command: Command) -> Result<Frame, ()> {
+    fn send_command(&mut self, command: Command) -> Result<Frame, ClientError> {
         self.connection.send_frame(command.into())?;
-        self.connection.receive_frame()
+        Ok(self.connection.receive_frame()?)
     }
+}
+
+#[derive(Debug, Error)]
+pub enum ClientError {
+    #[error("IO error")]
+    ConnectionError(#[from] connection::ConnectionError),
 }
 
 #[cfg(test)]
