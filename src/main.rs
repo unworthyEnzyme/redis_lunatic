@@ -1,7 +1,6 @@
 use clap::{Parser, Subcommand};
-use lunatic::{net::TcpListener, sleep, spawn_link, Mailbox};
-use redis_lunatic::{client::Client, server::Server};
-use std::{fmt::format, time::Duration};
+use lunatic::{net::TcpListener, spawn_link, Mailbox};
+use redis_lunatic::server::Server;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -29,7 +28,7 @@ fn main(_: Mailbox<()>) {
                 println!("Listening on port: {}", port);
                 server.run();
             });
-            let _ = server.result();
+            server.result();
         }
     }
 }
