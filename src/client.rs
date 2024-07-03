@@ -76,21 +76,21 @@ mod tests {
 
     #[lunatic::test]
     fn ping() {
-        let mut client = Client::connect("[::1]:6379").unwrap();
+        let mut client = Client::connect("127.0.0.1:6379").unwrap();
         let pong = client.ping().unwrap();
         assert_eq!(pong, Frame::Simple("PONG".to_string()))
     }
 
     #[lunatic::test]
     fn set() {
-        let mut client = Client::connect("[::1]:6379").unwrap();
+        let mut client = Client::connect("127.0.0.1:6379").unwrap();
         let response = client.set("name", "unworthyEnzyme".into());
         assert!(response.is_ok());
     }
 
     #[lunatic::test]
     fn get() {
-        let mut client = Client::connect("[::1]:6379").unwrap();
+        let mut client = Client::connect("127.0.0.1:6379").unwrap();
         client.set("name", "unworthyEnzyme".into()).unwrap();
         let response = client.get("name").unwrap();
         assert_eq!(response, Frame::Bulk("unworthyEnzyme".into()));

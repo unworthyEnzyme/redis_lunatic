@@ -23,7 +23,7 @@ fn main(_: Mailbox<()>) {
     match cli.command {
         Commands::Server { port } => {
             let server = spawn_link!(@task |port = port| {
-                let listener = TcpListener::bind(format!("[::1]:{port}")).unwrap();
+                let listener = TcpListener::bind(format!("127.0.0.1:{port}")).unwrap();
                 let mut server = Server::new(listener);
                 println!("Listening on port: {}", port);
                 server.run();
