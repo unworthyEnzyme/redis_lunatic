@@ -11,7 +11,7 @@ pub struct Connection<R, W> {
 #[derive(Debug, Error)]
 pub enum ConnectionError {
     #[error("IO error")]
-    IO(#[from] io::Error),
+    Io(#[from] io::Error),
     #[error("Decoding error")]
     DecodingError(#[from] frame::DecodingError),
 }
