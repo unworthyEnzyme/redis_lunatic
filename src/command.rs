@@ -29,13 +29,13 @@ impl TryFrom<Frame> for Command {
 
     fn try_from(value: Frame) -> Result<Self, Self::Error> {
         let Frame::Array(frames) = value else {
-            return  Err(());
+            return Err(());
         };
         let Some(name) = frames.get(0) else {
             return Err(());
         };
         let Frame::Bulk(name) = name else {
-            return  Err(());
+            return Err(());
         };
         if name == &Bytes::from("PING") {
             Ok(Command::Ping)
@@ -48,7 +48,8 @@ impl TryFrom<Frame> for Command {
             };
             return Ok(Command::Get(key));
         } else if name == &Bytes::from("SET") {
-            let (Some(Frame::Bulk(key)), Some(Frame::Bulk(value))) = (frames.get(1), frames.get(2)) else {
+            let (Some(Frame::Bulk(key)), Some(Frame::Bulk(value))) = (frames.get(1), frames.get(2))
+            else {
                 return Err(());
             };
             let Ok(key) = String::from_utf8(key.to_vec()) else {
